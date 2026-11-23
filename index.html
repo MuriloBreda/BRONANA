@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#070914">
+  <meta name="description" content="BRONANA: sobreviva às hordas, colete XP e melhore sua banana em ondas cada vez mais difíceis.">
+  <title>BRONANA — Sobrevivência no Pomar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Bronana — início">
+        <span class="brand-mark" aria-hidden="true">✳</span>
+        <span class="brand-name">BRONANA<span> / ARENA</span></span>
+      </a>
+      <p class="topbar-note">JOGOS FEITOS PARA SENTIR <span>✦</span></p>
+      <button class="sound-button fullscreen-toggle" id="fullscreen-button" type="button" aria-label="Ativar tela cheia" title="Ativar tela cheia">
+        <span id="fullscreen-icon" aria-hidden="true">⛶</span>
+        <span id="fullscreen-label">TELA CHEIA</span>
+      </button>
+      <button class="sound-button" id="sound-button" type="button" aria-label="Ativar ou desativar som" title="Ativar ou desativar som">
+        <span id="sound-icon" aria-hidden="true">♫</span>
+        <span id="sound-label">SOM LIGADO</span>
+      </button>
+    </header>
+
+    <section class="main-menu-screen" id="main-menu" aria-label="Menu principal BRONANA">
+      <div class="menu-backdrop-art" aria-hidden="true">
+        <span class="doodle doodle-a">✹</span><span class="doodle doodle-b">◉</span><span class="doodle doodle-c">✿</span><span class="doodle doodle-d">◉</span>
+      </div>
+      <header class="main-menu-brand"><span class="brand-splat">✹</span><h1><span>BRO</span><b>NANA</b></h1><p>UM POMAR NADA TRANQUILO</p></header>
+      <div class="menu-layout">
+        <nav class="main-menu-nav" aria-label="Menu do jogo">
+          <button class="menu-choice menu-choice-primary" id="menu-play" type="button"><span>JOGAR</span><b>▶</b></button>
+          <button class="menu-choice" id="menu-story" type="button"><span>DESAFIO DO POMAR</span><b>◆</b></button>
+          <button class="menu-choice" id="menu-characters-open" type="button"><span>PERSONAGENS</span><b>●</b></button>
+          <button class="menu-choice" id="menu-options-open" type="button"><span>OPÇÕES</span><b>⚙</b></button>
+          <button class="menu-choice" id="menu-progress-open" type="button"><span>PROGRESSO</span><b>↗</b></button>
+          <button class="menu-choice" id="menu-credits-open" type="button"><span>CRÉDITOS</span><b>✦</b></button>
+        </nav>
+        <div class="menu-mascot" aria-hidden="true">
+          <div class="mascot-glow"></div>
+          <svg viewBox="0 0 420 460">
+            <ellipse cx="210" cy="425" rx="138" ry="18" fill="#09080b" opacity=".65"/>
+            <g stroke="#100d12" stroke-width="15" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M91 257 53 235 42 196 75 177 111 218Z" fill="#f5cb3d"/><path d="m329 255 42-23 12-38-32-18-39 42Z" fill="#f5cb3d"/>
+              <path d="m150 344-36 53q-10 24 22 24h49l27-45Z" fill="#f5eee3"/><path d="m263 344 42 49q15 24-17 28h-44l-31-42Z" fill="#f5eee3"/>
+              <path id="menu-banana-body" d="M132 87q35-43 78-17 36 22 50 62 20 53 68 54 16 37-18 60-37 23-77-5-36-26-67-39-33-14-50 27-14 36-41 63-27 27-48 2-19-24 3-67 17-34 32-66 25-52 70-74Z" fill="#ffd84a"/>
+              <path d="M132 87q-6-27 17-49l20 37" fill="#78a747"/>
+              <path d="M175 158q16-18 32 0m28 0q16-18 32 0" fill="none" stroke-width="10"/><path d="M202 194q22 18 44-1" fill="none" stroke-width="8"/>
+              <path d="m77 190-38-7-1 27 39 6m264-25 39-8 2 27-39 7" fill="#eee9df"/><path d="m48 190-22 1v19l22-1m322-21 24-3 2 20-24 4" fill="#aaa5a1"/>
+            </g>
+            <path d="M137 91q30-30 60-10m-83 67q-18 31-27 53" fill="none" stroke="#fff0a0" stroke-width="9" stroke-linecap="round"/>
+            <circle cx="188" cy="157" r="4" fill="white"/><circle cx="245" cy="157" r="4" fill="white"/>
+          </svg>
+          <span class="mascot-caption">A LENDA DO BANANAL</span>
+        </div>
+        <aside class="menu-side-note"><span class="note-stamp">01</span><strong>SOBREVIVA<br>À COLHEITA</strong><p>Hordas de frutas selvagens. Uma banana. Quantas ondas você aguenta?</p></aside>
+      </div>
+      <footer class="main-menu-footer"><span>WASD / SETAS · MOVER</span><span>DISPARO AUTOMÁTICO</span><span>ESPAÇO · DASH</span><small id="selected-character-label">BANANA SIMPLES · SEM HABILIDADE</small></footer>
+      <section class="menu-panel hidden" id="menu-panel" aria-live="polite">
+        <button id="menu-panel-back" type="button">← VOLTAR AO MENU</button>
+        <h2 id="menu-panel-title">OPÇÕES</h2>
+        <p id="menu-panel-copy"></p>
+        <div id="menu-panel-controls"></div>
+      </section>
+    </section>
+
+    <section class="game-layout" aria-label="Jogo Bronana">
+      <aside class="side-panel">
+        <div class="eyebrow"><span class="live-dot"></span> EXPERIÊNCIA INTERATIVA · Nº 001</div>
+        <h1>BRO<br><span class="title-outline">NANA</span><span class="title-period">.</span></h1>
+        <p class="subtitle">S O B R E V I V Ê N C I A &nbsp; N O &nbsp; P O M A R</p>
+        <div class="title-rule"></div>
+        <p class="story">Uma banana. Um pomar inteiro de monstros. Aguente as hordas, junte XP e monte uma build poderosa antes que a próxima onda chegue.</p>
+        <p class="objective"><span class="objective-icon">✦</span> Mova-se, colete recursos e sobreviva a cada onda.</p>
+        <div class="side-footer">
+          <div class="studio-seal"><span>🍌</span><div><b>BRONANA ARENA</b><small>UM POMAR. MUITAS ONDAS.</small></div></div>
+          <span class="version">BUILD 02.00</span>
+        </div>
+      </aside>
+
+      <section class="game-column" aria-label="Área de jogo">
+        <div class="game-frame">
+          <div class="game-hud" id="game-hud" aria-live="polite">
+            <div class="hud-group">
+              <span class="hud-label">MOEDAS</span>
+              <span class="hud-value"><span class="hud-coin">B</span><span id="score">0000</span></span>
+            </div>
+            <div class="hud-center"><span class="hud-label" id="hud-sector-label">ONDA</span><span class="hud-value" id="sector">01</span><span class="hud-label timer-label" id="timer-label">VENENOS</span><span class="hud-value timer-value" id="wave-timer">0/5</span></div>
+            <div class="hud-right">
+              <span class="hud-label">CASCA</span>
+              <div class="health-track" aria-label="Resistência da casca"><span class="health-fill" id="health-fill"></span></div>
+            </div>
+          </div>
+
+          <div class="mission-status" id="mission-status" aria-live="polite">Escolha um modo para começar</div>
+
+          <canvas id="game-canvas" aria-label="BRONANA: mova a banana com WASD ou setas; o disparo é automático"></canvas>
+
+          <button class="pause-button" id="pause-button" type="button" aria-label="Pausar jogo" title="Pausar jogo">II</button>
+
+          <div class="pause-screen hidden" id="pause-screen" aria-label="Jogo pausado">
+            <p>MISSÃO PAUSADA</p>
+            <button class="primary-button compact-button" id="resume-button" type="button">
+              <span>CONTINUAR</span><span class="button-arrow">▶</span>
+            </button>
+            <button class="primary-button compact-button exit-button" id="exit-button" type="button">
+              <span>SAIR</span><span class="button-arrow">↩</span>
+            </button>
+          </div>
+
+          <div class="levelup-screen hidden" id="levelup-screen" aria-label="Escolha uma melhoria">
+            <p class="screen-kicker">NÍVEL ALCANÇADO</p>
+            <h2>Escolha uma <span>melhoria</span></h2>
+            <div class="upgrade-choices" id="upgrade-choices"></div>
+            <button class="shop-skip" id="shop-skip" type="button">COMEÇAR ONDA SEM COMPRAR</button>
+          </div>
+
+          <div class="screen start-screen" id="start-screen">
+            <div class="screen-content">
+              <div class="orbit-emblem" aria-hidden="true"><span>✳</span><i></i><b></b></div>
+              <p class="screen-kicker">UMA BANANA CONTRA O POMAR</p>
+              <h2>O pomar<br>ficou <span>hostil.</span></h2>
+              <p class="screen-copy">Corra. Atire. Evolua.</p>
+              <div class="mode-menu" id="mode-menu" aria-label="Escolha o modo de jogo">
+                <button class="primary-button" id="story-button" type="button"><span>DESAFIO DO POMAR</span><span class="button-arrow">↗</span></button>
+                <button class="primary-button free-button" id="free-button" type="button"><span>COMEÇAR PARTIDA</span><span class="button-arrow">∞</span></button>
+              </div>
+              <p class="screen-hint"><span class="desktop-hint">WASD / SETAS PARA MOVER &nbsp;·&nbsp; DISPARO AUTOMÁTICO &nbsp;·&nbsp; ESPAÇO: DASH</span><span class="mobile-hint">TOQUE E ARRASTE PARA MOVER · DISPARO AUTOMÁTICO</span></p>
+            </div>
+            <span class="corner-note">LOCALIZAÇÃO<br>DESCONHECIDA</span>
+            <span class="corner-coords">09° 42′ 18″ N<br>47° 31′ 06″ W</span>
+          </div>
+
+          <div class="screen end-screen hidden" id="end-screen">
+            <div class="screen-content">
+              <div class="end-symbol" aria-hidden="true">✳</div>
+              <p class="screen-kicker" id="end-kicker">FIM DE JOGO</p>
+              <h2 id="end-title">A horda<br>venceu<span>.</span></h2>
+              <p class="screen-copy" id="end-copy">A banana ainda pode voltar para o pomar.</p>
+              <div class="final-score"><span>PONTOS DA PARTIDA</span><strong id="final-score">0000</strong></div>
+              <button class="primary-button" id="restart-button" type="button"><span>TENTAR NOVAMENTE</span><span class="button-arrow">↻</span></button>
+            </div>
+            <span class="corner-note">FIM DA TRANSMISSÃO</span>
+          </div>
+        </div>
+
+        <footer class="game-footer">
+          <span><span class="footer-dot"></span> SISTEMA ONLINE</span>
+          <span class="footer-center">CADA BANANA TEM UMA HISTÓRIA.</span>
+          <span>© BRONANA ARENA <span class="footer-star">✦</span></span>
+        </footer>
+      </section>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
