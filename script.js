@@ -39,7 +39,15 @@
     { id: "tank", name: "Banana Tanque", skill: "Casca grossa · reduz dano recebido", stats: "Dano 1 · vida 155 · armadura 5", mission: 4, damage: 1, speed: 175, maxHealth: 155, fireRate: .38, dashCooldown: 1.4, armor: 5, magnet: 0, xpGain: 1, regen: 0, projectiles: 1, colors: ["#fff0b6", "#c89b4b", "#765329"] },
     { id: "gold", name: "Banana Dourada", skill: "Ímã de moedas · coleta de mais longe", stats: "Dano 1 · vida 100 · alcance de coleta +35", mission: 5, damage: 1, speed: 205, maxHealth: 100, fireRate: .34, dashCooldown: 1.15, armor: 0, magnet: 35, xpGain: 1, regen: 0, projectiles: 1, colors: ["#fff3a0", "#f7bd27", "#cf781b"] },
     { id: "purple", name: "Banana Roxa", skill: "Mente afiada · ganha o dobro de XP por moeda", stats: "Dano 1 · vida 90 · XP por moeda ×2", mission: 6, damage: 1, speed: 215, maxHealth: 90, fireRate: .34, dashCooldown: 1.15, armor: 0, magnet: 0, xpGain: 2, regen: 0, projectiles: 1, colors: ["#f2c6ff", "#bd76dc", "#74459d"] },
-    { id: "pink", name: "Banana Rosa", skill: "Regeneração · recupera vida com o tempo", stats: "Dano 1 · vida 90 · regenera 0,45 por segundo", mission: 7, damage: 1, speed: 210, maxHealth: 90, fireRate: .34, dashCooldown: 1.15, armor: 0, magnet: 0, xpGain: 1, regen: .45, projectiles: 1, colors: ["#ffd4df", "#ef8ba7", "#aa4e7a"] }
+    { id: "pink", name: "Banana Rosa", skill: "Regeneração · recupera vida com o tempo", stats: "Dano 1 · vida 90 · regenera 0,45 por segundo", mission: 7, damage: 1, speed: 210, maxHealth: 90, fireRate: .34, dashCooldown: 1.15, armor: 0, magnet: 0, xpGain: 1, regen: .45, projectiles: 1, colors: ["#ffd4df", "#ef8ba7", "#aa4e7a"] },
+    { id: "orange", name: "Banana Laranja", skill: "Canhão triplo · começa com três sementes", stats: "Dano 0,8 · vida 100 · 3 projéteis", mission: 8, damage: .8, speed: 205, maxHealth: 100, fireRate: .38, dashCooldown: 1.15, armor: 0, magnet: 0, xpGain: 1, regen: 0, projectiles: 3, colors: ["#ffe3a1", "#f5a13b", "#bd5726"] },
+    { id: "black", name: "Banana Noturna", skill: "Sombra protetora · mais armadura e vida", stats: "Vida 130 · armadura 8 · velocidade 175", mission: 9, damage: 1, speed: 175, maxHealth: 130, fireRate: .38, dashCooldown: 1.3, armor: 8, magnet: 0, xpGain: 1, regen: 0, projectiles: 1, colors: ["#b99b64", "#58413b", "#231f29"] },
+    { id: "rainbow", name: "Banana Arco-Íris", skill: "Sorte colorida · ganha XP e moedas extras", stats: "Dano 1,1 · vida 105 · +1 moeda por coleta", mission: 10, damage: 1.1, speed: 210, maxHealth: 105, fireRate: .32, dashCooldown: 1.05, armor: 0, magnet: 8, xpGain: 1.5, coinBonus: 1, regen: 0, projectiles: 1, colors: ["#fff1a1", "#d768b4", "#557fd0"] },
+    { id: "ice", name: "Banana Glacial", skill: "Casca congelada · fica invulnerável por mais tempo", stats: "Vida 120 · proteção 1,5s · velocidade 190", mission: 11, damage: .9, speed: 190, maxHealth: 120, fireRate: .36, dashCooldown: 1.2, armor: 2, magnet: 0, xpGain: 1, regen: 0, projectiles: 1, hitCooldown: 1.5, colors: ["#e1fcff", "#75cfe4", "#4381bd"] },
+    { id: "fire", name: "Banana Vulcânica", skill: "Sementes ardentes · dano alto e disparo potente", stats: "Dano 1,8 · vida 80 · tiro lento", mission: 12, damage: 1.8, speed: 205, maxHealth: 80, fireRate: .48, dashCooldown: 1.15, armor: 0, magnet: 0, xpGain: 1, regen: 0, projectiles: 1, colors: ["#ffe071", "#f06b35", "#a92b27"] },
+    { id: "silver", name: "Banana Prateada", skill: "Passo fantasma · velocidade e dash aprimorados", stats: "Velocidade 285 · dash 0,55s · vida 85", mission: 13, damage: .9, speed: 285, maxHealth: 85, fireRate: .34, dashCooldown: .55, armor: 0, magnet: 0, xpGain: 1, regen: 0, projectiles: 1, colors: ["#f4ffff", "#b9c8d2", "#788d9d"] },
+    { id: "spotted", name: "Banana Pintada", skill: "Farejadora de moedas · atrai moedas e ganha XP", stats: "Ímã +55 · XP ×2 · vida 95", mission: 14, damage: 1, speed: 200, maxHealth: 95, fireRate: .35, dashCooldown: 1.1, armor: 0, magnet: 55, xpGain: 2, regen: 0, projectiles: 1, colors: ["#fff1ad", "#f2d05c", "#9d6c37"] },
+    { id: "king", name: "Banana Rei", skill: "Coroa do pomar · vida, dano e armadura", stats: "Dano 1,3 · vida 125 · armadura 3", mission: 15, damage: 1.3, speed: 195, maxHealth: 125, fireRate: .33, dashCooldown: 1.05, armor: 3, magnet: 12, xpGain: 1, regen: .1, projectiles: 1, colors: ["#fff3a4", "#e9bd3e", "#a86c24"] }
   ];
   const game = {
     active: false, paused: false, score: 0, best: 0, health: 100, elapsed: 0, lastTime: 0,
@@ -96,7 +104,15 @@
     { title: "MISSÃO 4 · CASCA GROSSA", objective: "Derrote 18 venenos", type: "kills", target: 18 },
     { title: "MISSÃO 5 · TESOURO DO POMAR", objective: "Colete 10 moedas", type: "coins", target: 10 },
     { title: "MISSÃO 6 · A LONGA NOITE", objective: "Sobreviva por 60 segundos", type: "survive", target: 60 },
-    { title: "MISSÃO 7 · RAINHA DO VENENO", objective: "Derrote 30 venenos", type: "kills", target: 30 }
+    { title: "MISSÃO 7 · RAINHA DO VENENO", objective: "Derrote 30 venenos", type: "kills", target: 30 },
+    { title: "MISSÃO 8 · CHUVA DE SEMENTES", objective: "Derrote 35 venenos", type: "kills", target: 35 },
+    { title: "MISSÃO 9 · COFRE DO BANANAL", objective: "Colete 20 moedas", type: "coins", target: 20 },
+    { title: "MISSÃO 10 · ARCO-ÍRIS SOMBRIO", objective: "Sobreviva por 75 segundos", type: "survive", target: 75 },
+    { title: "MISSÃO 11 · TEMPESTADE GLACIAL", objective: "Derrote 45 venenos", type: "kills", target: 45 },
+    { title: "MISSÃO 12 · FORNALHA DO POMAR", objective: "Colete 30 moedas", type: "coins", target: 30 },
+    { title: "MISSÃO 13 · PASSO FANTASMA", objective: "Sobreviva por 100 segundos", type: "survive", target: 100 },
+    { title: "MISSÃO 14 · CAÇADORA DE MOEDAS", objective: "Derrote 55 venenos", type: "kills", target: 55 },
+    { title: "MISSÃO 15 · COROA DO BANANAL", objective: "Derrote 70 venenos", type: "kills", target: 70 }
   ];
   game.missionIndex = Math.min(game.completedMissions.length, missions.length - 1);
 
@@ -131,8 +147,8 @@
     game.player = {
       x: game.width / 2, y: game.height / 2, angle: -Math.PI / 2, dash: 0, radius: 10,
       damage: character.damage, speed: character.speed, fireRate: character.fireRate,
-      maxHealth: character.maxHealth, dashCooldown: character.dashCooldown, armor: character.armor, hitCooldown: character.id === "tank" ? 1.2 : 1,
-      coinMagnet: character.magnet, xpGain: character.xpGain, regen: character.regen,
+      maxHealth: character.maxHealth, dashCooldown: character.dashCooldown, armor: character.armor, hitCooldown: character.hitCooldown || (character.id === "tank" ? 1.2 : 1),
+      coinMagnet: character.magnet, coinBonus: character.coinBonus || 0, xpGain: character.xpGain, regen: character.regen,
       projectiles: character.projectiles, colors: character.colors
     };
     game.health = character.maxHealth;
@@ -443,7 +459,7 @@
     for (const coin of game.coins) {
       if (distance(player, coin) < 23 + player.coinMagnet) {
         game.score += 25;
-        game.materials++;
+        game.materials += 1 + player.coinBonus;
         game.xp += player.xpGain;
         if (game.mode === "story" && missions[game.missionIndex].type === "coins") game.missionProgress++;
         coin.collected = true;
