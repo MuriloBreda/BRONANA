@@ -23,6 +23,8 @@
   const levelupScreen = document.getElementById("levelup-screen");
   const upgradeChoices = document.getElementById("upgrade-choices");
   const shopSkip = document.getElementById("shop-skip");
+  const shopLock = document.getElementById("shop-lock");
+  const shopReroll = document.getElementById("shop-reroll");
   const scoreElement = document.getElementById("score");
   const sectorElement = document.getElementById("sector");
   const healthFill = document.getElementById("health-fill");
@@ -53,12 +55,65 @@
     active: false, paused: false, score: 0, best: 0, health: 100, elapsed: 0, lastTime: 0,
     mode: "story", missionIndex: 0, missionProgress: 0, difficulty: 1, waveSpawnRemaining: 0,
     waveElapsed: 0, waveEnemyGoal: 5, waveKills: 0, bossWave: false, bossActive: false, level: 1, xp: 0, xpNext: 8, materials: 0,
+    phaseEnding: false,
     characterId: "simple", unlockedCharacters: ["simple"], completedMissions: [],
     spawnClock: 0, shotClock: 0, dashClock: 0, invulnerable: 0,
     combo: 0, comboClock: 0,
     player: null, enemies: [], coins: [], bullets: [], particles: [], stars: [],
-    sound: true, audio: null, width: 0, height: 0, dpr: 1
+    sound: true, audio: null, width: 0, height: 0, dpr: 1,
+    waveDuration: 60, coinsCollected: 0, enemiesKilled: 0, bossesDefeated: 0,
+    damageNumbers: [], weapons: [], items: {}, upgrades: [], shopLocked: false,
+    shopOffer: [], stats: null, seeds: 0, permanent: {}, eventName: "", eventClock: 0
   };
+
+  const WEAPONS = [
+    { id:"seed", name:"Semente de Banana", rarity:"COMUM", description:"Projétil rápido e preciso.", damage:1, cooldown:.34, projectileSpeed:510, projectiles:1, range:.72, knockback:2, behavior:"straight" },
+    { id:"vine", name:"Estilingue de Cipó", rarity:"INCOMUM", description:"Empurra inimigos com força.", damage:1.3, cooldown:.48, projectileSpeed:430, projectiles:1, range:.95, knockback:18, behavior:"knockback" },
+    { id:"boomerang", name:"Bananerangue", rarity:"RARO", description:"Vai até o alvo e retorna.", damage:1.5, cooldown:.72, projectileSpeed:380, projectiles:1, range:1.2, knockback:8, behavior:"boomerang" },
+    { id:"rain", name:"Chuva de Bananas", rarity:"RARO", description:"Dispara em vários sentidos.", damage:.65, cooldown:.9, projectileSpeed:360, projectiles:5, range:.75, knockback:3, behavior:"spread" },
+    { id:"shell", name:"Casca Explosiva", rarity:"ÉPICO", description:"Projétil que explode ao acertar.", damage:1.8, cooldown:1.05, projectileSpeed:300, projectiles:1, range:.9, knockback:10, behavior:"explosive" },
+    { id:"pulp", name:"Canhão de Polpa", rarity:"INCOMUM", description:"Projétil pesado de alto dano.", damage:3.2, cooldown:1.35, projectileSpeed:260, projectiles:1, range:1.2, knockback:22, behavior:"heavy" },
+    { id:"rot", name:"Podre de Área", rarity:"RARO", description:"Deixa dano persistente no chão.", damage:.8, cooldown:1.5, projectileSpeed:220, projectiles:1, range:.8, knockback:0, behavior:"area" },
+    { id:"bolt", name:"Raio Tropical", rarity:"ÉPICO", description:"Encadeia dano entre inimigos.", damage:1.4, cooldown:.8, projectileSpeed:620, projectiles:1, range:1.1, knockback:2, behavior:"chain" },
+    { id:"mill", name:"Moinho de Cascas", rarity:"RARO", description:"Cascas giram ao redor da banana.", damage:1.1, cooldown:.55, projectileSpeed:180, projectiles:3, range:1, knockback:6, behavior:"orbit" },
+    { id:"vortex", name:"Laranja Vortex", rarity:"LENDÁRIO", description:"Puxa os inimigos para o centro.", damage:.9, cooldown:1.25, projectileSpeed:200, projectiles:1, range:1.3, knockback:-28, behavior:"vortex" },
+    { id:"thorn", name:"Espinho Selvagem", rarity:"INCOMUM", description:"Perfura vários inimigos.", damage:.95, cooldown:.6, projectileSpeed:470, projectiles:1, range:1.1, knockback:4, behavior:"pierce" },
+    { id:"sun", name:"Sol de Casca", rarity:"ÉPICO", description:"Emite pulsos solares ao redor.", damage:1.3, cooldown:1.1, projectileSpeed:320, projectiles:8, range:.65, knockback:5, behavior:"radial" }
+  ];
+
+  const ITEMS = [
+    { id:"magnet", name:"Ímã de Cobre", rarity:"COMUM", effect:{pickupRange:18}, description:"+18 alcance de coleta" },
+    { id:"armor", name:"Casca de Ferro", rarity:"INCOMUM", effect:{armor:3}, description:"+3 armadura" },
+    { id:"vitamin", name:"Vitamina de Banana", rarity:"COMUM", effect:{maxHealth:25}, description:"+25 vida máxima" },
+    { id:"coffee", name:"Café do Pomar", rarity:"RARO", effect:{attackSpeed:.15}, description:"+15% velocidade de ataque" },
+    { id:"sneakers", name:"Tênis de Cipó", rarity:"COMUM", effect:{moveSpeed:.12}, description:"+12% velocidade" },
+    { id:"lens", name:"Lupa Tropical", rarity:"INCOMUM", effect:{range:.15}, description:"+15% alcance" },
+    { id:"golden", name:"Cacho Dourado", rarity:"RARO", effect:{coinGain:.2}, description:"+20% moedas" },
+    { id:"leaf", name:"Folha de Energia", rarity:"COMUM", effect:{healthRegen:.45}, description:"+0,45 vida por segundo" },
+    { id:"bag", name:"Saco de Sementes", rarity:"RARO", effect:{projectileCount:1}, description:"+1 projétil" },
+    { id:"pulp", name:"Polpa Concentrada", rarity:"INCOMUM", effect:{damage:.2}, description:"+20% dano" },
+    { id:"steel", name:"Sementes de Aço", rarity:"RARO", effect:{damage:.12,critChance:.03}, description:"+12% dano e +3% crítico" },
+    { id:"emerald", name:"Broto Esmeralda", rarity:"ÉPICO", effect:{lifesteal:.03}, description:"3% roubo de vida" },
+    { id:"hourglass", name:"Ampulheta Solar", rarity:"RARO", effect:{duration:.2}, description:"+20% duração de efeitos" },
+    { id:"clover", name:"Trevo da Colheita", rarity:"LENDÁRIO", effect:{luck:.12,coinGain:.1}, description:"+12 sorte e +10% moedas" },
+    { id:"crown", name:"Coroa de Casca", rarity:"ÉPICO", effect:{maxHealth:15,damage:.1}, description:"+15 vida e +10% dano" },
+    { id:"gloves", name:"Luvas Tropicais", rarity:"INCOMUM", effect:{cooldownReduction:.1}, description:"10% menos recarga" }
+  ];
+
+  const BUFFS = [
+    { id:"damage", name:"Polpa Poderosa", description:"+15% dano", rarity:"COMUM", apply:()=>{ game.stats.damage*=1.15; game.player.damage=game.stats.damage; } },
+    { id:"attack", name:"Rajada do Pomar", description:"-12% recarga dos disparos", rarity:"COMUM", apply:()=>{ game.player.fireRate=Math.max(.08,game.player.fireRate*.88); } },
+    { id:"speed", name:"Passo de Cipó", description:"+12% velocidade", rarity:"COMUM", apply:()=>{ game.stats.moveSpeed*=1.12; game.player.speed=game.stats.moveSpeed; } },
+    { id:"health", name:"Casca Revigorada", description:"+25 vida máxima e cura", rarity:"INCOMUM", apply:()=>{ game.stats.maxHealth+=25; game.player.maxHealth=game.stats.maxHealth; game.health=Math.min(game.health+25,game.stats.maxHealth); } },
+    { id:"magnet", name:"Ímã Natural", description:"+25 alcance de coleta", rarity:"COMUM", apply:()=>{ game.stats.pickupRange+=25; game.player.coinMagnet=game.stats.pickupRange; } },
+    { id:"crit", name:"Ponta Afiada", description:"+8% chance de crítico", rarity:"RARO", apply:()=>{ game.stats.critChance+=.08; } },
+    { id:"critDamage", name:"Fúria Vermelha", description:"+30% dano crítico", rarity:"RARO", apply:()=>{ game.stats.critDamage+=.30; } },
+    { id:"projectiles", name:"Saco de Sementes", description:"+1 projétil", rarity:"ÉPICO", apply:()=>{ game.stats.projectileCount++; game.player.projectiles=game.stats.projectileCount; } },
+    { id:"armor", name:"Casca Blindada", description:"+3 armadura", rarity:"INCOMUM", apply:()=>{ game.stats.armor+=3; game.player.armor=game.stats.armor; } },
+    { id:"regen", name:"Seiva Fresca", description:"+0,6 vida por segundo", rarity:"RARO", apply:()=>{ game.stats.healthRegen+=.6; game.player.regen=game.stats.healthRegen; } },
+    { id:"luck", name:"Trevo do Pomar", description:"+8 sorte", rarity:"RARO", apply:()=>{ game.stats.luck+=.08; } },
+    { id:"range", name:"Braço Comprido", description:"+15% alcance dos ataques", rarity:"INCOMUM", apply:()=>{ game.stats.range+=.15; } }
+  ];
 
   try {
     game.best = Number(localStorage.getItem("bronana-best")) || 0;
@@ -70,6 +125,68 @@
     if (selected && game.unlockedCharacters.includes(selected)) game.characterId = selected;
   } catch (error) {
     game.best = 0;
+  }
+
+  const SaveManager = {
+    key: "bronana-save",
+    load() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(this.key) || "{}");
+        game.seeds = Number(saved.seeds) || 0;
+        game.permanent = saved.permanent || {};
+        game.unlockedCharacters = [...new Set(["simple", ...(saved.characters || game.unlockedCharacters)])];
+        game.completedMissions = saved.missions || game.completedMissions;
+        game.best = Number(saved.best) || game.best;
+        game.stats = saved.stats || { runs:0, wins:0, bosses:0, kills:0, coins:0, bestTime:0 };
+      } catch (error) { console.warn("Falha ao carregar progresso.", error); }
+    },
+    save() {
+      try {
+        localStorage.setItem(this.key, JSON.stringify({
+          seeds: game.seeds, permanent: game.permanent,
+          characters: game.unlockedCharacters, missions: game.completedMissions,
+          best: game.best, stats: game.stats,
+          selectedCharacter: game.characterId
+        }));
+        localStorage.setItem("bronana-best", String(game.best));
+        localStorage.setItem("bronana-characters", JSON.stringify(game.unlockedCharacters));
+        localStorage.setItem("bronana-missions", JSON.stringify(game.completedMissions));
+        localStorage.setItem("bronana-selected-character", game.characterId);
+      } catch (error) { console.warn("Falha ao salvar progresso.", error); }
+    }
+  };
+  SaveManager.load();
+
+  function createStats(character) {
+    const permanent = game.permanent;
+    const stats = {
+      maxHealth: character.maxHealth * (1 + (permanent.health || 0)),
+      healthRegen: character.regen,
+      armor: character.armor,
+      damage: character.damage,
+      attackSpeed: 1 / character.fireRate,
+      moveSpeed: character.speed * (1 + (permanent.speed || 0)),
+      critChance: .1 + (permanent.crit || 0),
+      critDamage: 2,
+      pickupRange: 23 + character.magnet,
+      luck: .02,
+      projectileSpeed: 510,
+      projectileCount: character.projectiles,
+      range: 1,
+      knockback: 2,
+      cooldownReduction: 0,
+      lifesteal: 0,
+      xpGain: character.xpGain,
+      coinGain: 1 + (permanent.coins || 0),
+      areaDamage: 1,
+      duration: 1
+    };
+    if (character.id === "red") { stats.damage *= 1.3; stats.moveSpeed *= .9; }
+    if (character.id === "green") { stats.moveSpeed *= 1.2; stats.maxHealth *= .9; }
+    if (character.id === "blue") { stats.attackSpeed *= 1.3; stats.damage *= .9; }
+    if (character.id === "tank") { stats.maxHealth *= 1.5; stats.moveSpeed *= .82; stats.armor += 5; }
+    if (character.id === "king") { stats.damage *= 1.2; stats.maxHealth *= 1.2; }
+    return stats;
   }
 
   function resize() {
@@ -135,6 +252,15 @@
     game.xp = 0;
     game.xpNext = 8;
     game.materials = 0;
+    game.coinsCollected = 0;
+    game.enemiesKilled = 0;
+    game.bossesDefeated = 0;
+    game.damageNumbers = [];
+    game.weapons = [{ ...WEAPONS[0], level:1 }];
+    game.items = {};
+    game.upgrades = [];
+    game.eventName = "";
+    game.eventClock = 0;
     game.waveElapsed = 0;
     game.waveKills = 0;
     game.bossWave = false;
@@ -144,12 +270,14 @@
       game.waveSpawnRemaining = 0;
     }
     const character = characters.find(item => item.id === game.characterId) || characters[0];
+    const stats = createStats(character);
+    game.stats = stats;
     game.player = {
       x: game.width / 2, y: game.height / 2, angle: -Math.PI / 2, dash: 0, radius: 10,
-      damage: character.damage, speed: character.speed, fireRate: character.fireRate,
-      maxHealth: character.maxHealth, dashCooldown: character.dashCooldown, armor: character.armor, hitCooldown: character.hitCooldown || (character.id === "tank" ? 1.2 : 1),
-      coinMagnet: character.magnet, coinBonus: character.coinBonus || 0, xpGain: character.xpGain, regen: character.regen,
-      projectiles: character.projectiles, colors: character.colors
+      damage: stats.damage, speed: stats.moveSpeed, fireRate: 1 / stats.attackSpeed,
+      maxHealth: stats.maxHealth, dashCooldown: character.dashCooldown, armor: stats.armor, hitCooldown: character.hitCooldown || 1,
+      coinMagnet: stats.pickupRange, coinBonus: 0, xpGain: stats.xpGain, regen: stats.healthRegen,
+      projectiles: stats.projectileCount, colors: character.colors
     };
     game.health = character.maxHealth;
     game.health = character.maxHealth;
@@ -182,6 +310,14 @@
     game.active = false;
     game.paused = false;
     frame.classList.remove("is-playing");
+    const reward = Math.max(1, Math.floor(game.elapsed / 30) + game.bossesDefeated);
+    game.seeds += reward;
+    game.stats.runs = (game.stats.runs || 0) + 1;
+    game.stats.kills = (game.stats.kills || 0) + game.enemiesKilled;
+    game.stats.coins = (game.stats.coins || 0) + game.coinsCollected;
+    game.stats.bestTime = Math.max(game.stats.bestTime || 0, game.elapsed);
+    if (victory) game.stats.wins = (game.stats.wins || 0) + 1;
+    game.stats.bosses = (game.stats.bosses || 0) + game.bossesDefeated;
     if (game.score > game.best) {
       game.best = game.score;
       try {
@@ -212,6 +348,12 @@
       ? `${unlockedCharacter.name} desbloqueada! ${game.score >= game.best ? "Novo recorde" : "Recorde"}: ${String(game.best).padStart(4, "0")} pontos.`
       : `${game.score >= game.best ? "Novo recorde" : "Recorde"}: ${String(game.best).padStart(4, "0")} pontos.`;
     document.getElementById("final-score").textContent = String(game.score).padStart(4, "0");
+    const runSummary = document.getElementById("run-summary");
+    if (runSummary) runSummary.innerHTML =
+      `<span>TEMPO ${formatClock(game.elapsed)}</span><span>ONDA ${game.difficulty}</span><span>NÍVEL ${game.level}</span>` +
+      `<span>ELIMINAÇÕES ${game.enemiesKilled}</span><span>MOEDAS ${game.coinsCollected}</span><span>CHEFES ${game.bossesDefeated}</span>` +
+      `<span>SEMENTES +${reward}</span><strong>${game.weapons.map(w => w.name).join(" · ")}</strong>`;
+    SaveManager.save();
     restartButton.querySelector("span").textContent = storyWon && completedMission < missions.length - 1 ? "PRÓXIMA MISSÃO" : "TENTAR NOVAMENTE";
     endScreen.classList.remove("hidden");
     levelupScreen.classList.add("hidden");
@@ -246,6 +388,14 @@
     document.getElementById("wave-timer").classList.toggle("hidden", game.mode !== "free");
     healthFill.style.width = `${Math.max(0, game.health / (game.player?.maxHealth || 100) * 100)}%`;
     healthFill.style.background = game.health <= 30 ? "#ff6387" : "#ffd84d";
+    const xpFill = document.getElementById("xp-progress-fill");
+    const xpLabel = document.getElementById("xp-label");
+    if (xpFill) xpFill.style.width = `${Math.min(100, game.xp / game.xpNext * 100)}%`;
+    if (xpLabel) xpLabel.textContent = `${Math.floor(game.xp)}/${game.xpNext}`;
+    const waveFill = document.getElementById("wave-progress-fill");
+    if (waveFill) waveFill.style.width = `${game.mode === "free" ? Math.min(100, game.waveElapsed / game.waveDuration * 100) : 0}%`;
+    const build = document.getElementById("build-status");
+    if (build) build.textContent = `${game.weapons.map(w => w.name).join(" · ") || "Arma"} | ${Object.values(game.items).map(i => i.name).join(" · ") || "Sem itens"}`;
   }
 
   function formatClock(seconds) {
@@ -254,7 +404,7 @@
   }
 
   function showLevelUp(shop = false) {
-    if (game.paused) return;
+    if (game.paused && !shop) return;
     if (!shop) {
       game.xp -= game.xpNext;
       game.xpNext += 4;
@@ -264,24 +414,32 @@
     levelupScreen.querySelector(".screen-kicker").textContent = shop ? `INTERVALO · ONDA ${game.difficulty}` : `NÍVEL ${game.level} ALCANÇADO`;
     levelupScreen.querySelector("h2").innerHTML = shop ? (game.bossWave ? "Chefe na próxima <span>onda</span>" : "Prepare sua <span>banana</span>") : "Escolha uma <span>melhoria</span>";
     shopSkip.classList.toggle("visible", shop);
-    const upgrades = [
-      { name: "ARMA · Canhão duplo", detail: "+1 semente por disparo", apply: () => { game.player.projectiles++; } },
-      { name: "ARMA · Sementes de aço", detail: "+0,5 de dano por semente", apply: () => { game.player.damage += .5; } },
-      { name: "ARMA · Rajada de cascas", detail: "Atira 18% mais rápido", apply: () => { game.player.fireRate = Math.max(.12, game.player.fireRate * .82); } },
-      { name: "HABILIDADE · Dash turbo", detail: "Dash recarrega 18% mais rápido", apply: () => { game.player.dashCooldown = Math.max(.45, game.player.dashCooldown * .82); } },
-      { name: "HABILIDADE · Reflexo de casca", detail: "+0,15s de proteção após dano", apply: () => { game.player.hitCooldown += .15; } },
-      { name: "ACESSÓRIO · Botas de cipó", detail: "+25 de velocidade", apply: () => { game.player.speed += 25; } },
-      { name: "ACESSÓRIO · Ímã de cobre", detail: "+18 de alcance para moedas", apply: () => { game.player.coinMagnet += 18; } },
-      { name: "ACESSÓRIO · Casca reforçada", detail: "+2 de armadura", apply: () => { game.player.armor += 2; } },
-      { name: "ACESSÓRIO · Broche vital", detail: "+0,2 de regeneração por segundo", apply: () => { game.player.regen += .2; } },
-      { name: "CONSUMÍVEL · Vitamina", detail: "+25 de vida máxima e cura", apply: () => { game.player.maxHealth += 25; game.health = Math.min(game.player.maxHealth, game.health + 25); } }
-    ].sort(() => Math.random() - .5).slice(0, 3);
+    if (shopLock) shopLock.classList.toggle("visible", shop);
+    if (shopReroll) shopReroll.classList.toggle("visible", shop);
+    const weighted = [ ...WEAPONS, ...ITEMS ].sort((a, b) => (b.rarity === "LENDÁRIO" ? 1 : 0) - (a.rarity === "LENDÁRIO" ? 1 : 0) + Math.random() - .5);
+    let offer = weighted.slice(0, 3).map(entry => ({
+      name: `${entry.rarity} · ${entry.name}`,
+      detail: entry.description,
+      entry,
+      apply: () => {
+        if (ITEMS.includes(entry)) applyItem(entry);
+        else addWeapon(entry);
+      }
+    }));
+    if (shop) {
+      offer = game.shopLocked && game.shopOffer.length ? game.shopOffer : offer;
+      game.shopOffer = offer;
+    }
+    const rerollCost = 3;
+    shopSkip.textContent = shop ? "COMEÇAR ONDA" : "CONTINUAR";
     upgradeChoices.replaceChildren();
-    upgrades.forEach(upgrade => {
+    offer.forEach(upgrade => {
       const cost = shop ? 4 + Math.floor(Math.random() * 7) : 0;
       const button = document.createElement("button");
       button.className = "upgrade-card";
-      button.innerHTML = `<strong>${upgrade.name}</strong><span>${upgrade.detail}</span>${shop ? `<small>🍌 ${cost} cachos</small>` : ""}`;
+      const artType = ITEMS.includes(upgrade.entry) ? "item" : "weapon";
+      const artId = upgrade.entry?.id || "damage";
+      button.innerHTML = `${choiceArt(artId, artType)}<strong>${upgrade.name}</strong><span>${upgrade.detail}</span>${shop ? `<small>🍌 ${cost} cachos</small>` : ""}`;
       button.disabled = shop && game.materials < cost;
       button.addEventListener("click", () => {
         if (shop && game.materials < cost) return;
@@ -289,6 +447,9 @@
         upgrade.apply();
         levelupScreen.classList.add("hidden");
         shopSkip.classList.remove("visible");
+        if (shopLock) shopLock.classList.remove("visible");
+        if (shopReroll) shopReroll.classList.remove("visible");
+        if (shopLock) shopLock.classList.remove("visible");
         game.paused = false;
         if (shop) launchWave();
         updateHud();
@@ -308,23 +469,131 @@
     if (game.xp >= game.xpNext) showLevelUp();
   });
 
+  if (shopLock) {
+    shopLock.addEventListener("click", () => {
+      game.shopLocked = !game.shopLocked;
+      shopLock.textContent = game.shopLocked ? "LOJA TRAVADA" : "TRAVAR LOJA";
+      shopLock.classList.toggle("visible", true);
+      playTone(game.shopLocked ? 620 : 440, .08, .025);
+    });
+  }
+
+  if (shopReroll) {
+    shopReroll.addEventListener("click", () => {
+      if (!game.active || game.materials < 3) return;
+      game.materials -= 3;
+      playTone(520, .08, .035);
+      showLevelUp(true);
+    });
+  }
+
+  function rarityScale(rarity) {
+    return { COMUM:1, INCOMUM:1.25, RARO:1.5, "ÉPICO":1.85, "LENDÁRIO":2.25 }[rarity] || 1;
+  }
+
+  function applyItem(item) {
+    const existing = game.items[item.id];
+    if (existing) existing.level = (existing.level || 1) + 1;
+    else game.items[item.id] = { ...item, level:1 };
+    const scale = rarityScale(item.rarity);
+    const e = item.effect;
+    if (e.maxHealth) { game.stats.maxHealth += e.maxHealth * scale; game.player.maxHealth = game.stats.maxHealth; game.health += e.maxHealth * scale; }
+    if (e.healthRegen) { game.stats.healthRegen += e.healthRegen * scale; game.player.regen = game.stats.healthRegen; }
+    if (e.armor) { game.stats.armor += e.armor * scale; game.player.armor = game.stats.armor; }
+    if (e.damage) { game.stats.damage *= 1 + e.damage * scale; game.player.damage = game.stats.damage; }
+    if (e.attackSpeed) { game.stats.attackSpeed *= 1 + e.attackSpeed * scale; game.player.fireRate = Math.max(.08, 1 / game.stats.attackSpeed); }
+    if (e.moveSpeed) { game.stats.moveSpeed *= 1 + e.moveSpeed * scale; game.player.speed = game.stats.moveSpeed; }
+    if (e.pickupRange) { game.stats.pickupRange += e.pickupRange * scale; game.player.coinMagnet = game.stats.pickupRange; }
+    if (e.projectileCount) { game.stats.projectileCount += e.projectileCount * scale; game.player.projectiles = game.stats.projectileCount; }
+    if (e.range) game.stats.range += e.range * scale;
+    if (e.luck) game.stats.luck += e.luck * scale;
+    if (e.critChance) game.stats.critChance += e.critChance * scale;
+    if (e.coinGain) game.stats.coinGain *= 1 + e.coinGain * scale;
+    if (e.lifesteal) game.stats.lifesteal += e.lifesteal * scale;
+    if (e.duration) game.stats.duration *= 1 + e.duration * scale;
+    if (e.cooldownReduction) game.stats.cooldownReduction += e.cooldownReduction * scale;
+    game.upgrades.push(item.name);
+    updateHud();
+  }
+
+  function addWeapon(template) {
+    const existing = game.weapons.find(w => w.id === template.id);
+    if (existing) {
+      existing.level = Math.min(6, (existing.level || 1) + 1);
+      existing.damage *= 1.2;
+      if (existing.level === 3) existing.projectiles++;
+      if (existing.level === 4) existing.cooldown *= .82;
+      game.upgrades.push(`${template.name} Nv.${existing.level}`);
+    } else if (game.weapons.length < 6) {
+      game.weapons.push({ ...template, level:1 });
+      game.upgrades.push(template.name);
+    } else {
+      applyItem(ITEMS[Math.floor(Math.random() * ITEMS.length)]);
+    }
+    updateHud();
+  }
+
   function finishWave() {
+    if (game.phaseEnding) return;
+    game.phaseEnding = true;
     const completedWave = game.difficulty;
     game.difficulty++;
     game.bossWave = game.mode === "free" && game.difficulty % 10 === 0;
     game.bossActive = false;
     game.enemies = [];
     game.bullets = [];
+    game.coins = [];
+    game.particles = [];
     updateHud();
-    if (completedWave % 5 === 0) showLevelUp(true);
+    if (game.mode === "free") showFreeBuffs();
     else launchWave();
   }
 
+  function showFreeBuffs() {
+    game.paused = true;
+    levelupScreen.querySelector(".screen-kicker").textContent = `WAVE ${completedWaveText()} CONCLUÍDA`;
+    levelupScreen.querySelector("h2").innerHTML = "Escolha 1 <span>buff grátis</span>";
+    shopSkip.classList.remove("visible");
+    if (shopLock) shopLock.classList.remove("visible");
+    const pool = BUFFS.sort(() => Math.random() - .5).slice(0, 3);
+    upgradeChoices.replaceChildren();
+    pool.forEach(buff => {
+      const button = document.createElement("button");
+      button.className = "upgrade-card free-buff-card";
+      button.innerHTML = `${choiceArt(buff.id, "buff")}<strong>${buff.name}</strong><span>${buff.description}</span><small>${buff.rarity} · GRÁTIS</small>`;
+      button.addEventListener("click", () => {
+        buff.apply();
+        game.upgrades.push(buff.name);
+        levelupScreen.classList.add("hidden");
+        game.paused = false;
+        showLevelUp(true);
+      });
+      upgradeChoices.append(button);
+    });
+    levelupScreen.classList.remove("hidden");
+  }
+
+  function completedWaveText() {
+    return String(Math.max(1, game.difficulty - 1)).padStart(2, "0");
+  }
+
+  function choiceArt(id, type) {
+    const weapon = WEAPONS.find(item => item.id === id);
+    const item = ITEMS.find(entry => entry.id === id);
+    const symbol = weapon ? "⌁" : item ? "◆" : ({
+      damage:"✹", attack:"⌁", speed:"➤", health:"♥", magnet:"∪", crit:"◆",
+      critDamage:"🔥", projectiles:"●●●", armor:"⬟", regen:"☘", luck:"✦", range:"◎"
+    }[id] || "✦");
+    const label = (weapon?.name || item?.name || type).slice(0, 1).toUpperCase();
+    return `<span class="choice-art art-${type}" aria-hidden="true"><b>${symbol}</b><small>${label}</small></span>`;
+  }
+
   function launchWave() {
+    game.phaseEnding = false;
     game.spawnClock = 0;
     game.waveElapsed = 0;
     game.waveKills = 0;
-    game.waveEnemyGoal = game.difficulty * 5;
+    game.waveEnemyGoal = Math.min(240, game.difficulty * 12);
     const bossCount = game.mode === "free" && game.bossWave ? 1 : 0;
     game.waveSpawnRemaining = Math.max(0, game.waveEnemyGoal - bossCount);
     if (game.mode === "free" && game.bossWave && !game.bossActive) {
@@ -355,6 +624,14 @@
     game.elapsed += dt;
     if (game.mode === "free") {
       game.waveElapsed += dt;
+      if (game.eventClock > 0) {
+        game.eventClock -= dt;
+        if (game.eventClock <= 0) game.eventName = "";
+      }
+      if (game.waveElapsed >= game.waveDuration) {
+        finishWave();
+        return;
+      }
     }
     game.comboClock -= dt;
     if (game.comboClock <= 0) game.combo = 0;
@@ -396,8 +673,29 @@
     }
     for (const enemy of game.enemies) {
       const angle = Math.atan2(player.y - enemy.y, player.x - enemy.x);
-      enemy.x += Math.cos(angle) * enemy.speed * dt;
-      enemy.y += Math.sin(angle) * enemy.speed * dt;
+      enemy.slowClock = (enemy.slowClock || 0) - dt;
+      const slow = enemy.slowClock > 0 ? .45 : 1;
+      let moveX = Math.cos(angle) * enemy.speed * slow * dt;
+      let moveY = Math.sin(angle) * enemy.speed * slow * dt;
+      if (enemy.kind === "shooter") {
+        const dist = distance(player, enemy);
+        if (dist < 240) { moveX *= -0.55; moveY *= -0.55; }
+        enemy.shotClock = (enemy.shotClock || 1.8) - dt;
+        if (enemy.shotClock <= 0) {
+          game.bullets.push({x:enemy.x,y:enemy.y,vx:Math.cos(angle)*190,vy:Math.sin(angle)*190,life:2.5,damage:enemy.kind,enemyShot:true,hit:new Set(),behavior:"enemy"});
+          enemy.shotClock = 2;
+        }
+      } else if (enemy.kind === "thief") {
+        enemy.x += moveX * 1.35; enemy.y += moveY * 1.35;
+        if (distance(player, enemy) < 22 && game.materials > 0) { game.materials--; enemy.dead = true; }
+      } else if (enemy.kind === "explosive" && distance(player, enemy) < 42) {
+        game.health -= Math.max(8, 32 - player.armor);
+        game.invulnerable = player.hitCooldown;
+        burst(enemy.x, enemy.y, "#ff7a45", 16);
+        enemy.dead = true;
+      }
+      enemy.x += moveX;
+      enemy.y += moveY;
       enemy.pulse += dt * 5;
       if (distance(player, enemy) < player.radius + enemy.radius && game.invulnerable <= 0) {
         const contactDamage = enemy.kind === "boss" ? 38 : enemy.kind === "elite" ? 30 : enemy.kind === "brute" ? 22 : 14;
@@ -414,6 +712,12 @@
       bullet.x += bullet.vx * dt;
       bullet.y += bullet.vy * dt;
       bullet.life -= dt;
+      if (bullet.enemyShot && distance(player, bullet) < player.radius + 5) {
+        game.health -= Math.max(5, 16 - player.armor);
+        game.invulnerable = player.hitCooldown;
+        bullet.life = 0;
+        burst(player.x, player.y, "#ff6387", 8);
+      }
     }
     for (const coin of game.coins) coin.phase += dt * 3;
     for (const particle of game.particles) {
@@ -423,16 +727,41 @@
       particle.vx *= .985;
       particle.vy *= .985;
     }
+    for (const number of game.damageNumbers) {
+      number.y -= 20 * dt;
+      number.life -= dt;
+    }
+    game.damageNumbers = game.damageNumbers.filter(number => number.life > 0);
 
     for (const bullet of game.bullets) {
-      const target = game.enemies.find(enemy => distance(bullet, enemy) < enemy.radius + 3);
+      const target = game.enemies.find(enemy => !bullet.hit?.has(enemy) && distance(bullet, enemy) < enemy.radius + 3);
       if (target) {
-        target.hp -= game.player.damage;
-        bullet.life = 0;
+        if (bullet.hit) bullet.hit.add(target);
+        const luckCrit = game.stats.critChance + game.stats.luck * .05;
+        const critical = Math.random() < luckCrit;
+        const damage = bullet.damage * (critical ? game.stats.critDamage : 1);
+        target.hp -= damage;
+        target.slowClock = bullet.weaponId === "seed" && game.characterId === "blue" && Math.random() < .22 ? 1.2 : target.slowClock;
+        if (bullet.behavior === "knockback" || bullet.weaponId === "pulp") {
+          const angle = Math.atan2(target.y - player.y, target.x - player.x);
+          target.x += Math.cos(angle) * (bullet.weaponId === "pulp" ? 24 : 12);
+          target.y += Math.sin(angle) * (bullet.weaponId === "pulp" ? 24 : 12);
+        }
+        if (bullet.behavior !== "pierce") bullet.life = bullet.behavior === "boomerang" ? 1.15 : bullet.life;
+        if (bullet.behavior === "explosive") {
+          burst(target.x, target.y, "#ff7a45", 18);
+          for (const other of game.enemies) {
+            if (other !== target && distance(target, other) < 74) other.hp -= damage * .55;
+          }
+        }
+        game.damageNumbers.push({x:target.x,y:target.y,value:damage,critical,life:.65});
+        if (game.damageNumbers.length > 50) game.damageNumbers.shift();
+        if (bullet.behavior !== "pierce" && bullet.behavior !== "chain") bullet.life = 0;
         burst(bullet.x, bullet.y, target.color, 4);
         if (target.hp <= 0) {
           game.combo = game.comboClock > 0 ? game.combo + 1 : 1;
           game.comboClock = 2.4;
+          game.enemiesKilled++;
           const comboBonus = Math.min(game.combo - 1, 5) * 2;
           game.score += (target.kind === "boss" ? 250 : target.kind === "elite" ? 60 : target.kind === "brute" ? 30 : 10) + comboBonus;
           if (game.mode === "free") game.waveKills++;
@@ -450,6 +779,7 @@
           game.enemies.splice(game.enemies.indexOf(target), 1);
           if (target.kind === "boss") {
             game.bossActive = false;
+            game.bossesDefeated++;
           }
           playTone(285, .055, .025);
           updateHud();
@@ -460,6 +790,7 @@
       if (distance(player, coin) < 23 + player.coinMagnet) {
         game.score += 25;
         game.materials += 1 + player.coinBonus;
+        game.coinsCollected++;
         game.xp += player.xpGain;
         if (game.mode === "story" && missions[game.missionIndex].type === "coins") game.missionProgress++;
         coin.collected = true;
@@ -470,11 +801,27 @@
       }
     }
     game.coins = game.coins.filter(coin => !coin.collected);
-    updateHud();
-    if (game.mode === "free" && game.waveKills >= game.waveEnemyGoal && game.waveSpawnRemaining === 0 && game.enemies.length === 0) {
+    const killedBefore = new Set();
+    for (let i = game.enemies.length - 1; i >= 0; i--) {
+      const enemy = game.enemies[i];
+      if (enemy.dead || enemy.hp <= 0) {
+        if (enemy.dead) {
+          killedBefore.add(enemy);
+          burst(enemy.x, enemy.y, enemy.color || "#ff7a45", 8);
+        }
+        game.enemies.splice(i, 1);
+      }
+    }
+
+    if (game.mode === "free"
+      && game.waveElapsed < game.waveDuration
+      && game.waveSpawnRemaining === 0
+      && game.enemies.length === 0
+      && !game.phaseEnding) {
       finishWave();
       return;
     }
+    updateHud();
     if (game.mode === "story" && game.missionProgress >= missions[game.missionIndex].target) {
       finish(true);
       return;
@@ -485,11 +832,20 @@
 
   function shoot() {
     const p = game.player;
-    for (let i = 0; i < p.projectiles; i++) {
-      const spread = (i - (p.projectiles - 1) / 2) * .12 + (Math.random() - .5) * .045;
-      const angle = p.angle + spread;
-      game.bullets.push({ x: p.x + Math.cos(angle) * 15, y: p.y + Math.sin(angle) * 15, vx: Math.cos(angle) * 510, vy: Math.sin(angle) * 510, life: .72 });
-      burst(p.x + Math.cos(angle) * 16, p.y + Math.sin(angle) * 16, "#ffd84d", 2);
+    let weapons = game.weapons.length ? game.weapons : [WEAPONS[0]];
+    for (const weapon of weapons) {
+      const count = (weapon.projectiles || 1) + (weapon.id === "rain" ? 4 : 0) + Math.max(0, p.projectiles - 1);
+      for (let i = 0; i < count; i++) {
+        const spread = count === 1 ? 0 : (i - (count - 1) / 2) * .16;
+        const angle = p.angle + spread + (Math.random() - .5) * .025;
+        const speed = (weapon.projectileSpeed || 510) * (1 + (game.stats?.projectileSpeed ? 0 : 0));
+        game.bullets.push({
+          x:p.x + Math.cos(angle) * 15, y:p.y + Math.sin(angle) * 15,
+          vx:Math.cos(angle) * speed, vy:Math.sin(angle) * speed,
+          life:(weapon.range || .72) * 1.25, damage:(weapon.damage || 1) * p.damage,
+          behavior:weapon.behavior, weaponId:weapon.id, hit:new Set()
+        });
+      }
     }
     playTone(360 + Math.random() * 90, .035, .012);
   }
@@ -503,7 +859,17 @@
     const eliteChance = threatTime < 55 ? 0 : Math.min(.2, (threatTime - 55) * .0015);
     const bruteChance = Math.min(.48, .12 + threatTime * .003);
     const roll = Math.random();
-    const kind = roll < eliteChance ? "elite" : roll < eliteChance + bruteChance ? "brute" : "wisp";
+    const threat = threatTime;
+    let kind = roll < eliteChance ? "elite" : roll < eliteChance + bruteChance ? "brute" : "wisp";
+    if (threat > 25) {
+      const extra = Math.random();
+      if (extra < .14) kind = "runner";
+      else if (extra < .24) kind = "shooter";
+      else if (extra < .32) kind = "divider";
+      else if (extra < .40) kind = "explosive";
+      else if (extra < .46) kind = "thief";
+      else if (extra < .52) kind = "tank";
+    }
     const elite = kind === "elite";
     const brute = kind === "brute";
     const baseSpeed = elite ? 43 : brute ? 37 : 56;
@@ -591,14 +957,25 @@
     }
     ctx.globalAlpha = 1;
     if (game.player) drawPlayer();
+    for (const number of game.damageNumbers) {
+      ctx.save();
+      ctx.globalAlpha = clamp(number.life / .65, 0, 1);
+      ctx.fillStyle = number.critical ? "#ff5b72" : "#fff1a1";
+      ctx.shadowColor = number.critical ? "#ff3158" : "#d69d3a";
+      ctx.shadowBlur = number.critical ? 12 : 5;
+      ctx.font = `${number.critical ? "bold " : ""}${number.critical ? 17 : 12}px "DM Mono", monospace`;
+      ctx.textAlign = "center";
+      ctx.fillText(number.critical ? `CRÍTICO ${Math.round(number.value)}` : `${Math.round(number.value)}`, number.x, number.y);
+      ctx.restore();
+    }
     drawTouchStick();
   }
 
   function drawNebula() {
-    const glow = ctx.createRadialGradient(game.width * .68, game.height * .55, 0, game.width * .68, game.height * .55, game.width * .52);
-    glow.addColorStop(0, "rgba(101, 145, 48, .16)");
-    glow.addColorStop(.58, "rgba(111, 117, 39, .07)");
-    glow.addColorStop(1, "rgba(8, 10, 8, 0)");
+    const glow = ctx.createRadialGradient(game.width * .55, game.height * .48, 0, game.width * .55, game.height * .48, game.width * .62);
+    glow.addColorStop(0, "rgba(139, 179, 72, .18)");
+    glow.addColorStop(.52, "rgba(82, 111, 54, .10)");
+    glow.addColorStop(1, "rgba(8, 12, 8, 0)");
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, game.width, game.height);
   }
@@ -665,6 +1042,35 @@
     ctx.fillStyle = "#81502b";
     ctx.beginPath(); ctx.moveTo(14, -12); ctx.lineTo(20, -14); ctx.lineTo(20, -8); ctx.lineTo(15, -7); ctx.closePath(); ctx.fill();
     ctx.beginPath(); ctx.moveTo(-19, -13); ctx.lineTo(-15, -17); ctx.lineTo(-12, -12); ctx.lineTo(-16, -9); ctx.closePath(); ctx.fill();
+
+    if (game.weapons.length) {
+      const weapon = game.weapons[0];
+      ctx.save();
+      ctx.translate(18, 4);
+      ctx.rotate(.12);
+      ctx.fillStyle = "#f5cb3d";
+      ctx.strokeStyle = "#3a2817";
+      ctx.lineWidth = 2;
+      if (weapon.behavior === "boomerang") {
+        ctx.beginPath(); ctx.moveTo(0,-5); ctx.quadraticCurveTo(14,-14,18,-2); ctx.quadraticCurveTo(12,5,0,5); ctx.closePath(); ctx.fill(); ctx.stroke();
+      } else if (weapon.behavior === "heavy" || weapon.behavior === "explosive") {
+        ctx.fillRect(-2,-5,24,10); ctx.strokeRect(-2,-5,24,10);
+        ctx.fillStyle="#8c5a32"; ctx.fillRect(18,-8,7,16);
+      } else if (weapon.behavior === "orbit" || weapon.behavior === "mill") {
+        ctx.beginPath(); ctx.arc(8,0,7,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      } else {
+        ctx.fillRect(-1,-3,25,6); ctx.strokeRect(-1,-3,25,6);
+        ctx.fillStyle="#6f8f3a"; ctx.fillRect(20,-5,8,10);
+      }
+      ctx.restore();
+    }
+    const passiveCount = Object.keys(game.items).length;
+    if (passiveCount) {
+      ctx.fillStyle="#7bd7b1";
+      for (let i=0;i<Math.min(passiveCount,5);i++) {
+        ctx.beginPath(); ctx.arc(-12+i*6,-20-(i%2)*3,2.2,0,Math.PI*2); ctx.fill();
+      }
+    }
     ctx.restore();
     ctx.beginPath();
     ctx.arc(p.x, p.y, 23, 0, Math.PI * 2);

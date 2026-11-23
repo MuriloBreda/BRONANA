@@ -300,6 +300,22 @@ body { background: #16131a; }
 .character-card span { color: #f3e9df; font-size: 11px; line-height: 1.35; }
 .character-card small { color: #b7aeb2; font-size: 10px; line-height: 1.35; }
 .character-card em { margin-top: auto; color: #e86b54; font: normal 9px "DM Mono", monospace; letter-spacing: .08em; }
+.build-status { position:absolute; z-index:2; left:18px; bottom:16px; max-width:min(65%, 580px); padding:7px 9px; border-left:3px solid #ffd84a; color:#d9d0c7; background:rgba(20,17,22,.82); font:8px "DM Mono", monospace; line-through:unset; pointer-events:none; }
+.wave-progress { position:absolute; z-index:2; top:66px; left:0; width:100%; height:3px; background:rgba(255,255,255,.08); pointer-events:none; }
+.wave-progress span { display:block; width:0; height:100%; background:#ffd84a; box-shadow:0 0 10px #ffd84a; }
+.xp-hud { position:absolute; z-index:2; top:70px; right:18px; display:flex; align-items:center; gap:7px; color:#eee4da; font:8px "DM Mono", monospace; pointer-events:none; }
+.xp-hud div { width:96px; height:5px; background:rgba(255,255,255,.12); }
+.xp-hud i { display:block; width:0; height:100%; background:#71d5b1; box-shadow:0 0 8px #71d5b1; }
+.xp-hud b { min-width:34px; color:#ffd84a; font-weight:400; }
+.run-summary { display:grid; grid-template-columns:repeat(3, 1fr); gap:5px 12px; max-width:560px; margin:0 0 14px; color:#d1c3bb; font:8px "DM Mono", monospace; }
+.run-summary strong { grid-column:1/-1; color:#ffd84a; }
+.choice-art { position:relative; width:74px; height:74px; display:grid; place-items:center; margin:0 auto 3px; border:2px solid #9f8d63; border-radius:50%; color:#ffd84a; background:radial-gradient(circle at 35% 30%,#fff1a1 0 8%,#d79d32 38%,#5b3926 70%,#24151b 72%); box-shadow:0 8px 0 #141018,0 12px 24px rgba(0,0,0,.28); }
+.choice-art b { font-size:30px; line-height:1; text-shadow:0 3px #6a3421; }
+.choice-art small { position:absolute; right:-5px; bottom:-3px; display:grid; width:23px; height:23px; place-items:center; border:2px solid #17131a; border-radius:50%; color:#17131a; background:#f2d05c; font-size:9px; font-weight:900; }
+.art-item { border-radius:18px 18px 24px 24px; background:radial-gradient(circle at 35% 30%,#b9f1df 0 8%,#57ad91 42%,#315348 72%,#171a18 74%); }
+.art-buff { background:radial-gradient(circle at 35% 30%,#ffdcb0 0 8%,#de7e55 42%,#713d3a 72%,#1c1719 74%); }
+.upgrade-card { min-height:150px; }
+.upgrade-card strong { min-height:34px; }
 
 @media (max-width: 760px) {
   .main-menu-brand { top: 32px; }

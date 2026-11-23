@@ -100,6 +100,9 @@
           </div>
 
           <div class="mission-status" id="mission-status" aria-live="polite">Escolha um modo para começar</div>
+          <div class="build-status" id="build-status"></div>
+          <div class="wave-progress"><span id="wave-progress-fill"></span></div>
+          <div class="xp-hud"><span>XP</span><div><i id="xp-progress-fill"></i></div><b id="xp-label">0/8</b></div>
 
           <canvas id="game-canvas" aria-label="BRONANA: mova a banana com WASD ou setas; o disparo é automático"></canvas>
 
@@ -120,6 +123,8 @@
             <h2>Escolha uma <span>melhoria</span></h2>
             <div class="upgrade-choices" id="upgrade-choices"></div>
             <button class="shop-skip" id="shop-skip" type="button">COMEÇAR ONDA SEM COMPRAR</button>
+            <button class="shop-skip" id="shop-reroll" type="button">RE-ROLAR · 3 MOEDAS</button>
+            <button class="shop-skip" id="shop-lock" type="button">TRAVAR LOJA</button>
           </div>
 
           <div class="screen start-screen" id="start-screen">
@@ -144,6 +149,7 @@
               <p class="screen-kicker" id="end-kicker">FIM DE JOGO</p>
               <h2 id="end-title">A horda<br>venceu<span>.</span></h2>
               <p class="screen-copy" id="end-copy">A banana ainda pode voltar para o pomar.</p>
+              <div class="run-summary" id="run-summary"></div>
               <div class="final-score"><span>PONTOS DA PARTIDA</span><strong id="final-score">0000</strong></div>
               <button class="primary-button" id="restart-button" type="button"><span>TENTAR NOVAMENTE</span><span class="button-arrow">↻</span></button>
             </div>
